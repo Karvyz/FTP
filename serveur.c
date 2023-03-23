@@ -8,11 +8,26 @@
 #include <sys/wait.h>
 
 #define MAX_NAME_LEN 256
-#define POOL_SIZE 5
-int pids[POOL_SIZE];
+#define NB_PROC 5
+#define NUMPORT 2121
+int pids[NB_PROC];
+int is_fils = 0;
 
-void CTRLC(int sig) {
-    for (int i = 0; i < POOL_SIZE; i++){
+void creerfils()
+{
+    for (int i = 0; i < NB_PROC; i++)
+    {
+        if ((pids[i] = Fork()) == 0)
+        {
+            is_fils = 1;
+        }
+    }
+}
+
+void SIGINT_handler(int sig)
+{
+    for (int i = 0; i < NB_PROC; i++)
+    {
         Kill(pids[i], sig);
         Waitpid(pids[i], 0, 0);
     }
@@ -21,55 +36,52 @@ void CTRLC(int sig) {
 
 void ftp(int connfd);
 
-/* 
+/*
  * Note that this code only works with IPv4 addresses
  * (IPv6 is not supported)
  */
 int main(int argc, char **argv)
 {
-    Signal(SIGINT, CTRLC);
-    int listenfd, connfd, port;
+    Signal(SIGINT, SIGINT_handler);
+    int listenfd, connfd;
     socklen_t clientlen;
     struct sockaddr_in clientaddr;
     char client_ip_string[INET_ADDRSTRLEN];
     char client_hostname[MAX_NAME_LEN];
-    
-    if (argc != 2) {
-        fprintf(stderr, "usage: %s <port>\n", argv[0]);
-        exit(0);
-    }
-    port = atoi(argv[1]);
-    
+
     clientlen = (socklen_t)sizeof(clientaddr);
 
-    listenfd = Open_listenfd(port);
-    for (int i = 0; i < POOL_SIZE; i++) {
-        if ((pids[i] = Fork()) == 0) {
-            Signal(SIGINT, SIG_DFL);
-            while (1) {
-                connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-                if (connfd == -1)
-                    continue;
-                /* determine the name of the client */
-                Getnameinfo((SA *) &clientaddr, clientlen,
-                            client_hostname, MAX_NAME_LEN, 0, 0, 0);
-                    
-                /* determine the textual representation of the client's IP address */
-                Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
-                        INET_ADDRSTRLEN);
-                    
-                printf("server connected to %s (%s)\n", client_hostname,
-                    client_ip_string);
+    listenfd = Open_listenfd(NUMPORT);
+    creerfils();
+    if (is_fils){
+        /*fils*/
+        Signal(SIGINT, SIG_DFL);
+        while (1){
+            connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
+            if (connfd == -1)
+                continue;
+            /* determine the name of the client */
+            Getnameinfo((SA *)&clientaddr, clientlen,
+                        client_hostname, MAX_NAME_LEN, 0, 0, 0);
 
-                ftp(connfd);
-                Close(connfd);
-            }
-            exit(0);
+            /* determine the textual representation of the client's IP address */
+            Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
+                      INET_ADDRSTRLEN);
+
+            printf("server connected to %s (%s)\n", client_hostname,
+                   client_ip_string);
+
+            ftp(connfd);
+            Close(connfd);
         }
+        exit(0);
     }
-    while(1){
-        pause();
+    else {
+        /*père*/
+        while (1)
+        {
+            pause();
+        }
+        exit(0);
     }
-    exit(0);
 }
-
