@@ -15,7 +15,3 @@ typedef struct {
     enum codes_erreurs erreur;
     int32_t taille_fichier;
 } Get_reponse;
-
-typedef struct {
-    char buffer[8192];
-} Transfert;
