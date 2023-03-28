@@ -49,7 +49,7 @@ void client(int clientfd) {
 
     // Tant que la commande n'est pas valide on recommence
     while (1) {
-        printf("FTP>");
+        printf("\033[0;34mFTP>\033[0m\n");;
         l = readcmd();
         
         // On ferme si stdin est fermé
