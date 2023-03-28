@@ -60,6 +60,16 @@ void GET_fichier(Cmdline *l, int clientfd) {
     printf("\033[0;32mDone\033[0m\n");
 }
 
+void fin_communication(int clientfd) {
+    // On cree une requete "END"
+    Requete_client rc;
+    rc.type = END;
+    rc.taille = 0;
+
+    // On envoie la requete
+    Rio_writen(clientfd, &rc, sizeof(Requete_client));
+}
+
 void client(int clientfd) {
     printf("client connected to server OS\n"); 
     Cmdline *l;
@@ -90,6 +100,11 @@ void client(int clientfd) {
         // Si on cherche à obtenir un fichier
         if (strcmp(l->seq[0][0], "GET") == 0) {
             GET_fichier(l, clientfd);
+            continue;
+        }
+
+        if (strcmp(l->seq[0][0], "BYE") == 0) {
+            fin_communication(clientfd);
             break;
         }
     }

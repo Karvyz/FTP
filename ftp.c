@@ -76,16 +76,23 @@ void get_f(int connfd, Requete_client requete){
             nb_packet--;
         }
     }
-
 }
 
-void ftp(int connfd)
-{
-    /*reçoit la requette*/
-    Requete_client requete;
-    Rio_readn(connfd, &requete, sizeof(Requete_client));
-    /*si la requette est get : c'est à dire copié un fichier du serveur*/
-    if (requete.type==GET){
-        get_f(connfd, requete);
+void ftp(int connfd) {
+    while (1) {
+        /*reçoit la requette*/
+        Requete_client requete;
+        Rio_readn(connfd, &requete, sizeof(Requete_client));
+
+        switch (requete.type) {
+            case GET: // copier un fichier du serveur
+                get_f(connfd, requete);
+                break;
+            case PUT:// copier un fichier vers le serveur
+                break;
+            case END: // Fin de la communication
+                printf("End communication\n");
+                return;
+        }
     }
 }
