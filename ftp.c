@@ -49,5 +49,7 @@ void ftp(int connfd)
     Rio_readn(connfd, &requete, sizeof(Requete_client));
     /*recoit le nom du fichier*/
 
-    if (requete.type==GET){get_f(connfd, requete);}
+    if (requete.type==GET){
+        get_f(connfd, requete);
+    }
 }

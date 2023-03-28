@@ -29,7 +29,7 @@ void get_file(Cmdline *l, int clientfd) {
     int new_file = Open(nom_fichier, O_CREAT | O_WRONLY, 0644);
     Rio_writen(new_file, buffer, reponse.taille_fichier);
     free(buffer);
-    printf("Done");
+    printf("Done\n");
 }
 
 void client(int clientfd) {
@@ -56,6 +56,7 @@ void client(int clientfd) {
         
         if (strcmp(l->seq[0][0], "GET") == 0) {
             get_file(l, clientfd);
+            break;
         }
     }
 }
@@ -81,5 +82,5 @@ int main(int argc, char **argv) {
     client(clientfd);
     
     Close(clientfd);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
