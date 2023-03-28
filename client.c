@@ -10,18 +10,17 @@ void get_file(Cmdline *l, int clientfd) {
     if (nom_fichier == NULL) {
         return;
     }
-
     Requete_client rc;
     rc.type = GET;
     rc.taille = strlen(nom_fichier);
 
-    Rio_writen(clientfd, &rc, sizeof(rc));
+    Rio_writen(clientfd, &rc, sizeof(Requete_client));
     Rio_writen(clientfd, nom_fichier, rc.taille);
 
     Get_reponse reponse;
     Rio_readn(clientfd, &reponse, sizeof(Get_reponse));
     if (reponse.erreur != AUCUNE) {
-        fprintf(stderr, "erreur %d", reponse.erreur);
+        fprintf(stderr, "erreur %d\n", reponse.erreur);
         exit(EXIT_FAILURE);
     }
     char* buffer = Malloc(reponse.taille_fichier);
@@ -30,6 +29,7 @@ void get_file(Cmdline *l, int clientfd) {
     int new_file = Open(nom_fichier, O_CREAT | O_WRONLY, 0644);
     Rio_writen(new_file, buffer, reponse.taille_fichier);
     free(buffer);
+    printf("Done");
 }
 
 void client(int clientfd) {
