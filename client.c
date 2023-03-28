@@ -41,7 +41,8 @@ void GET_fichier(Cmdline *l, int clientfd) {
     // On stocke le fichier reçut dans un fichier du même nom à la racine
     int new_file = Open(nom_fichier, O_CREAT | O_WRONLY, 0644);
     Rio_writen(new_file, buffer, reponse.taille_fichier);
-    printf("Done\n");
+    //done lorsque tout est fini
+    printf("\033[0;32mDone\033[0m\n");
 }
 
 void client(int clientfd) {
