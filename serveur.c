@@ -6,10 +6,11 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/wait.h>
+#include "protocole.h"
 
-#define MAX_NAME_LEN 256
 #define NB_PROC 5
-#define NUMPORT 2121
+#define MAX_NAME_LEN 256
+
 int pids[NB_PROC];
 int is_fils = 0;
 
@@ -71,6 +72,7 @@ int main(int argc, char **argv)
             printf("server connected to %s (%s)\n", client_hostname,
                    client_ip_string);
 
+            /*appel à la fonction ftp qui gère l'échange entre le serveur et client*/
             ftp(connfd);
             Close(connfd);
         }
