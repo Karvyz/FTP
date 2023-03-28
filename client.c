@@ -5,57 +5,71 @@
 #include <stdlib.h>
 #include <string.h>
 
-void get_file(Cmdline *l, int clientfd) {
+
+// Procedure pour recevoir un fichier
+void GET_fichier(Cmdline *l, int clientfd) {
     char* nom_fichier = l->seq[0][1];
     if (nom_fichier == NULL) {
         return;
     }
+
+    // On cree une requete "GET" qui contient la taille du nom du fichier
     Requete_client rc;
     rc.type = GET;
     rc.taille = strlen(nom_fichier);
 
+    // On envoie la requete
     Rio_writen(clientfd, &rc, sizeof(Requete_client));
+
+    // On envoie le nom du fichier
     Rio_writen(clientfd, nom_fichier, rc.taille);
 
+    // On verifie la réponse du serveur pour savoir si il y a eu une erreur
+    // On obtient également la taille du fichier
     Get_reponse reponse;
     Rio_readn(clientfd, &reponse, sizeof(Get_reponse));
     if (reponse.erreur != AUCUNE) {
         fprintf(stderr, "erreur %d\n", reponse.erreur);
         exit(EXIT_FAILURE);
     }
-    char* buffer = Malloc(reponse.taille_fichier);
+
+    // On reçoit le fichier
+    char buffer[reponse.taille_fichier];
     Rio_readn(clientfd, buffer, reponse.taille_fichier);
 
+    // On stocke le fichier reçut dans un fichier du même nom à la racine
     int new_file = Open(nom_fichier, O_CREAT | O_WRONLY, 0644);
     Rio_writen(new_file, buffer, reponse.taille_fichier);
-    free(buffer);
     printf("Done\n");
 }
 
 void client(int clientfd) {
     printf("client connected to server OS\n"); 
     Cmdline *l;
+
+    // Tant que la commande n'est pas valide on recommence
     while (1) {
         printf("FTP>");
         l = readcmd();
         
-        // If input stream closed, normal termination
+        // On ferme si stdin est fermé
         if (!l) {
-            exit(0);    // No need to free l before exit, readcmd() already did it
+            exit(0);
         }
 
-        // Syntax error, read another command
+        // Erreur de syntaxe dans la commande
         if (l->err) {
             fprintf(stderr, "synthax error: %s\n", l->err);
             continue;
         }
 
-        // Empty command
+        // Commande vide
         if (!l->seq[0])
             continue;
         
+        // Si on cherche à obtenir un fichier
         if (strcmp(l->seq[0][0], "GET") == 0) {
-            get_file(l, clientfd);
+            GET_fichier(l, clientfd);
             break;
         }
     }
@@ -72,13 +86,10 @@ int main(int argc, char **argv) {
     host = argv[1];
     port = atoi(argv[2]);
 
-    /*
-     * Note that the 'host' can be a name or an IP address.
-     * If necessary, Open_clientfd will perform the name resolution
-     * to obtain the IP address.
-     */
+    // Connexion au serveur
     clientfd = Open_clientfd(host, port);
 
+    // application du client
     client(clientfd);
     
     Close(clientfd);
