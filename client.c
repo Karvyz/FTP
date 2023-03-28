@@ -48,10 +48,11 @@ void client(int clientfd) {
     printf("client connected to server OS\n"); 
     Cmdline *l;
 
+    srand(time(NULL));
     // Tant que la commande n'est pas valide on recommence
     while (1) {
-        srand(time(NULL));
-        int random_color = rand() % 7 + 31; // génère un nombre aléatoire entre 31 et 37 (couleurs ANSI pour le texte)
+        // génère un nombre aléatoire pour afficher FTP> avec une couleur aléatoire 
+        int random_color = rand() % 7 + 31; 
         printf("\033[0;%dmFTP>\033[0m", random_color);
         l = readcmd();
         
