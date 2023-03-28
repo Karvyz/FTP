@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#define TAILLE_BUFFER 256
+
 /*test si le fichier est accessibles :
     renvoi 1 si inexistant
     renvoi 2 si inaccessible en lecture
@@ -52,16 +54,27 @@ void get_f(int connfd, Requete_client requete){
         /*création d'une structure stat pour stocker la taille du fichier*/
         struct stat infos_fichier;
         Fstat(fichier, &infos_fichier);
-        int32_t taille = infos_fichier.st_size;
+        int taille = infos_fichier.st_size;
         reponse.taille_fichier = taille;
 
         /*renvoi la reponse avec la taille du fichier et sans erreur*/
         Rio_writen(connfd, &reponse, sizeof(reponse));
+        char buffer[TAILLE_BUFFER];
+        int taille_buffer= TAILLE_BUFFER;
+        Rio_writen(connfd, &taille_buffer, sizeof(int));
 
-        /*creation du buffer sur lequel on va écrire le fichier puis l'envoyer dans la socket*/
-        char buffer[taille];
-        Rio_readn(fichier, buffer, taille);
-        Rio_writen(connfd, buffer ,taille);
+        int nb_packet = (taille/TAILLE_BUFFER) + ((taille%TAILLE_BUFFER) > 0 ? 1 : 0);
+        while (nb_packet>0)
+        {   int taille_effective;
+            if (nb_packet==1)
+                {taille_effective = taille%TAILLE_BUFFER;}
+            else {taille_effective= TAILLE_BUFFER;}
+
+            /*creation du buffer sur lequel on va écrire le fichier puis l'envoyer dans la socket*/
+            Rio_readn(fichier, buffer, taille_effective);
+            Rio_writen(connfd, buffer ,taille_effective);
+            nb_packet--;
+        }
     }
 
 }

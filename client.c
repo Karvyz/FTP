@@ -35,13 +35,28 @@ void GET_fichier(Cmdline *l, int clientfd) {
     }
 
     // On reçoit le fichier
-    char buffer[reponse.taille_fichier];
-    Rio_readn(clientfd, buffer, reponse.taille_fichier);
+    int taille_buffer;
+    Rio_readn(clientfd, &taille_buffer, sizeof(int));
+    int nb_packet = (reponse.taille_fichier / taille_buffer) + ((reponse.taille_fichier % taille_buffer) > 0 ? 1 : 0);
 
     // On stocke le fichier reçut dans un fichier du même nom à la racine
     int new_file = Open(nom_fichier, O_CREAT | O_WRONLY, 0644);
-    Rio_writen(new_file, buffer, reponse.taille_fichier);
-    //done lorsque tout est fini
+
+    while (nb_packet>0)
+    {   
+        int taille_effective;
+        if (nb_packet==1){
+            taille_effective= reponse.taille_fichier%taille_buffer;
+        }
+        else {taille_effective=taille_buffer;}
+
+        char buffer[taille_buffer];
+        Rio_readn(clientfd, buffer, taille_effective);
+        Rio_writen(new_file, buffer, taille_effective);
+        nb_packet--;
+    }
+    
+    //print done lorsque tout est fini
     printf("\033[0;32mDone\033[0m\n");
 }
 
