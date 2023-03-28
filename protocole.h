@@ -7,9 +7,16 @@ enum codes_erreurs {
     ERREUR_INCONNUE = 3
 };
 
+enum type_requette {
+    GET = 0,
+    END = 1,
+    PUT = 2
+};
+
 typedef struct {
-    char nom_fichier[256];
-} Requete;
+    enum type_requette type;
+    int32_t taille;
+} Requete_client;
 
 typedef struct {
     enum codes_erreurs erreur;
