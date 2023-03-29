@@ -34,24 +34,33 @@ void GET_fichier(Cmdline *l, int clientfd) {
         exit(EXIT_FAILURE);
     }
 
-    // On reçoit le fichier
+    // On reçoit la taille du buffer
     int taille_buffer;
     Rio_readn(clientfd, &taille_buffer, sizeof(int));
+    // calcul du nombre de packet que l'on va recevoir
     int nb_packet = (reponse.taille_fichier / taille_buffer) + ((reponse.taille_fichier % taille_buffer) > 0 ? 1 : 0);
-
-    // On stocke le fichier reçut dans un fichier du même nom à la racine
+    // créer le fichier sur lequel on va écrire le fichier qu'on va recevoir
     int new_file = Open(nom_fichier, O_CREAT | O_WRONLY, 0644);
 
+    /* boucle pour la reception des packets
+        nb_packet sera le nombre de paquet qu'il reste à recevoir*/
     while (nb_packet>0)
     {   
+        /*taille_effective sera la taille du bloc qu'on recoit:
+            elle est égale à taille buffer (qu'on a recu plus tot) pour tous les blocs
+            sauf le dernier qui prendra le nombre d'octets restant*/
         int taille_effective;
         if (nb_packet==1){
+            //calcul du nombre d'octet du dernier bloc
             taille_effective= reponse.taille_fichier%taille_buffer;
         }
         else {taille_effective=taille_buffer;}
 
+        //creation buffer de taille=taille_effective
         char buffer[taille_buffer];
+        //on recoit le bloc qu'on stock dans le buffer
         Rio_readn(clientfd, buffer, taille_effective);
+        //on écrit le bloc dans le fichier
         Rio_writen(new_file, buffer, taille_effective);
         nb_packet--;
     }

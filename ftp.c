@@ -54,24 +54,30 @@ void get_f(int connfd, Requete_client requete){
         /*création d'une structure stat pour stocker la taille du fichier*/
         struct stat infos_fichier;
         Fstat(fichier, &infos_fichier);
-        int taille = infos_fichier.st_size;
-        reponse.taille_fichier = taille;
+        int taille_fichier = infos_fichier.st_size;
+        reponse.taille_fichier = taille_fichier;
 
-        /*renvoi la reponse avec la taille du fichier et sans erreur*/
+        /*renvoi la reponse qui contient : la taille du fichier et erreur =0*/
         Rio_writen(connfd, &reponse, sizeof(reponse));
         char buffer[TAILLE_BUFFER];
+        // on envoie la taille du buffer
         int taille_buffer= TAILLE_BUFFER;
         Rio_writen(connfd, &taille_buffer, sizeof(int));
-
-        int nb_packet = (taille/TAILLE_BUFFER) + ((taille%TAILLE_BUFFER) > 0 ? 1 : 0);
+        // on calcule le nombre de packet qu'on va envoyer
+        int nb_packet = (taille_fichier/TAILLE_BUFFER) + ((taille_fichier%TAILLE_BUFFER) > 0 ? 1 : 0);
+        /* boucle pour l'envoi des packets
+         nb_packet sera le nombre de paquet qu'il reste à envoyer*/
         while (nb_packet>0)
-        {   int taille_effective;
+            {   
+            /*taille_effective sera la taille du bloc qu'on envoi:
+            elle est égale à taille buffer pour tous sauf le dernier qui prendra le nombre d'octets restant*/
+            int taille_effective;
             if (nb_packet==1)
-                {taille_effective = taille%TAILLE_BUFFER;}
+                {taille_effective = taille_fichier%TAILLE_BUFFER;}
             else {taille_effective= TAILLE_BUFFER;}
-
-            /*creation du buffer sur lequel on va écrire le fichier puis l'envoyer dans la socket*/
+            // on lis le fichier qu'on stock dans le buffer
             Rio_readn(fichier, buffer, taille_effective);
+            //on écrit dans la socket le buffer
             Rio_writen(connfd, buffer ,taille_effective);
             nb_packet--;
         }
