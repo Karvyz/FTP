@@ -4,8 +4,7 @@
 enum codes_erreurs {
     AUCUNE = 0,
     FICHIER_NON_TROUVE = 1,
-    FICHIER_NON_ACCESSIBLE = 2,
-    ERREUR_INCONNUE = 3
+    FICHIER_NON_ACCESSIBLE = 2
 };
 
 enum type_requette {

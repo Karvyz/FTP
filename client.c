@@ -6,9 +6,21 @@
 #include <string.h>
 #include <time.h>
 
+//petite fonction pour calculer les stats du transfert
+float calculer_rapidite(double taille, double temps) {
+    float kbits = taille / 1000; // conversion de la taille en Kbits
+    float kbits_par_sec = kbits / temps; // calcul du débit en Kbits/s
+    return kbits_par_sec;
+}
+
 
 // Procedure pour recevoir un fichier
 void GET_fichier(Cmdline *l, int clientfd) {
+    
+    struct timeval temps_debut, temps_fin;
+    // temps de début
+    gettimeofday(&temps_debut, NULL);
+
     char* nom_fichier = l->seq[0][1];
     if (nom_fichier == NULL) {
         return;
@@ -29,9 +41,21 @@ void GET_fichier(Cmdline *l, int clientfd) {
     // On obtient également la taille du fichier
     Get_reponse reponse;
     Rio_readn(clientfd, &reponse, sizeof(Get_reponse));
+    //si il y a une erreur on affiche l'erreur
     if (reponse.erreur != AUCUNE) {
-        fprintf(stderr, "erreur %d\n", reponse.erreur);
-        exit(EXIT_FAILURE);
+        switch (reponse.erreur){
+            case FICHIER_NON_TROUVE:
+                printf("\033[0;31mfichier inexistant\033[0m\n");
+                break;
+
+            case FICHIER_NON_ACCESSIBLE: 
+                printf("\033[0;31mfichier non accessible\033[0m\n");
+                break;
+
+            default:
+                break;
+        }
+        return;
     }
 
     // On reçoit la taille du buffer
@@ -64,9 +88,17 @@ void GET_fichier(Cmdline *l, int clientfd) {
         Rio_writen(new_file, buffer, taille_effective);
         nb_packet--;
     }
+
+    // temps de fin
+    gettimeofday(&temps_fin, NULL); // temps de fin
     
+    double temps_ecoule = (temps_fin.tv_sec - temps_debut.tv_sec) + (double)(temps_fin.tv_usec - temps_debut.tv_usec) / 1000000.0; // temps écoulé en secondes
+    double rapidite = calculer_rapidite(reponse.taille_fichier, temps_ecoule);
+
     //print done lorsque tout est fini
-    printf("\033[0;32mDone\033[0m\n");
+    printf("\033[0;32mTransfer successfully complete :\033[0m\n");
+    printf("%d bytes ont été reçu en %.3lf secondes (%.2lf Kbytes/s)\n",reponse.taille_fichier, temps_ecoule, rapidite);
+    
 }
 
 void fin_communication(int clientfd) {
@@ -107,12 +139,13 @@ void client(int clientfd) {
             continue;
         
         // Si on cherche à obtenir un fichier
-        if (strcmp(l->seq[0][0], "GET") == 0) {
+        if (strcmp(l->seq[0][0], "get") == 0) {
+
             GET_fichier(l, clientfd);
             continue;
         }
 
-        if (strcmp(l->seq[0][0], "BYE") == 0) {
+        if (strcmp(l->seq[0][0], "bye") == 0) {
             fin_communication(clientfd);
             break;
         }

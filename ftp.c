@@ -4,8 +4,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <time.h>
 
-#define TAILLE_BUFFER 256
+#define TAILLE_BUFFER 8192
 
 /*test si le fichier est accessibles :
     renvoi 1 si inexistant
@@ -27,6 +28,7 @@ reçoit la requette GET,
 envoie le fichier voulu en envoyant d'abord sa taille puis le fichier
 renvoi une erreur si fichier inexistant ou innaccessible*/
 void get_f(int connfd, Requete_client requete){
+
 
     /*creation du buffer de taille qu'on a reçu dans requete */
     char* nom_fichier = malloc(requete.taille + 1);
