@@ -6,7 +6,6 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#define TAILLE_BUFFER 8192
 
 /*test si le fichier est accessibles :
     renvoi 1 si inexistant
@@ -62,9 +61,17 @@ void get_f(int connfd, Requete_client requete){
         /*renvoi la reponse qui contient : la taille du fichier et erreur =0*/
         Rio_writen(connfd, &reponse, sizeof(reponse));
         char buffer[TAILLE_BUFFER];
-        // on envoie la taille du buffer
-        int taille_buffer= TAILLE_BUFFER;
-        Rio_writen(connfd, &taille_buffer, sizeof(int));
+
+        // // on envoie la taille du buffer
+        // int taille_buffer= TAILLE_BUFFER;
+        // Rio_writen(connfd, &taille_buffer, sizeof(int));
+
+        int octet_depart;
+        rio_readn(connfd, &octet_depart, sizeof(int));
+        if (octet_depart > 0) {
+            lseek(fichier, octet_depart, SEEK_SET);
+            taille_fichier = taille_fichier - octet_depart;
+        }
         // on calcule le nombre de packet qu'on va envoyer
         int nb_packet = (taille_fichier/TAILLE_BUFFER) + ((taille_fichier%TAILLE_BUFFER) > 0 ? 1 : 0);
         /* boucle pour l'envoi des packets
@@ -95,8 +102,6 @@ void ftp(int connfd) {
         switch (requete.type) {
             case GET: // copier un fichier du serveur
                 get_f(connfd, requete);
-                break;
-            case PUT:// copier un fichier vers le serveur
                 break;
             case END: // Fin de la communication
                 printf("End communication\n");
