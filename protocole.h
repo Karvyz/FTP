@@ -26,7 +26,7 @@ typedef struct {
 // 3) structure de la réponse du serveur au client
 typedef struct {
     enum codes_erreurs erreur;
-    int32_t taille_fichier;
+    int64_t taille_fichier;
 } Get_reponse;
 
 // 4) On envoie tous les paquets de données

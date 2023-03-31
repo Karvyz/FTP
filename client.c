@@ -70,13 +70,13 @@ void GET_fichier(Cmdline *l, int clientfd) {
 
     struct stat infos_fichier;
     Fstat(new_file, &infos_fichier);
-    int taille_fichier = infos_fichier.st_size;
-    rio_writen(clientfd, &taille_fichier, sizeof(int));
+    long taille_fichier = infos_fichier.st_size;
+    rio_writen(clientfd, &taille_fichier, sizeof(long));
 
-    int taille_restant = reponse.taille_fichier - taille_fichier;
+    long taille_restant = reponse.taille_fichier - taille_fichier;
 
     // calcul du nombre de packet que l'on va recevoir
-    int nb_packet = (taille_restant / TAILLE_BUFFER) + ((taille_restant % TAILLE_BUFFER) > 0 ? 1 : 0);
+    long nb_packet = (taille_restant / TAILLE_BUFFER) + ((taille_restant % TAILLE_BUFFER) > 0 ? 1 : 0);
 
     /* boucle pour la reception des packets
         nb_packet sera le nombre de paquet qu'il reste à recevoir*/
@@ -85,7 +85,7 @@ void GET_fichier(Cmdline *l, int clientfd) {
         /*taille_effective sera la taille du bloc qu'on recoit:
             elle est égale à taille buffer (qu'on a recu plus tot) pour tous les blocs
             sauf le dernier qui prendra le nombre d'octets restant*/
-        int taille_effective;
+        long taille_effective;
         if (nb_packet==1){
             //calcul du nombre d'octet du dernier bloc
             taille_effective= taille_restant%TAILLE_BUFFER;
@@ -109,7 +109,7 @@ void GET_fichier(Cmdline *l, int clientfd) {
 
     //print done lorsque tout est fini
     printf("\033[0;32mTransfer successfully complete :\033[0m\n");
-    printf("%d bytes ont été reçu en %.3lf secondes (%.2lf Kbytes/s)\n",reponse.taille_fichier, temps_ecoule, rapidite);
+    printf("%ld bytes ont été reçu en %.3lf secondes (%.2lf Kbytes/s)\n",reponse.taille_fichier, temps_ecoule, rapidite);
     
 }
 
