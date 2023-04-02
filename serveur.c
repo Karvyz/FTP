@@ -35,6 +35,8 @@ void SIGINT_handler(int sig)
     exit(0);
 }
 
+void SIGPIPE_handler(int sig);
+
 void ftp(int connfd);
 
 /*
@@ -57,6 +59,7 @@ int main(int argc, char **argv)
     if (is_fils){
         /*fils*/
         Signal(SIGINT, SIG_DFL);
+        Signal(SIGPIPE, SIGPIPE_handler);
         while (1){
             connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
             if (connfd == -1)

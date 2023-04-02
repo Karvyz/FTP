@@ -33,15 +33,15 @@ void GET_fichier(Cmdline *l, int clientfd) {
     rc.taille = strlen(nom_fichier);
 
     // On envoie la requete
-    Rio_writen(clientfd, &rc, sizeof(Requete_client));
+    rio_writen(clientfd, &rc, sizeof(Requete_client));
 
     // On envoie le nom du fichier
-    Rio_writen(clientfd, nom_fichier, rc.taille);
+    rio_writen(clientfd, nom_fichier, rc.taille);
 
     // On verifie la réponse du serveur pour savoir si il y a eu une erreur
     // On obtient également la taille du fichier
     Get_reponse reponse;
-    Rio_readn(clientfd, &reponse, sizeof(Get_reponse));
+    rio_readn(clientfd, &reponse, sizeof(Get_reponse));
     //si il y a une erreur on affiche l'erreur
     if (reponse.erreur != AUCUNE) {
         switch (reponse.erreur){
@@ -95,9 +95,9 @@ void GET_fichier(Cmdline *l, int clientfd) {
         //creation buffer de taille=taille_effective
         char buffer[TAILLE_BUFFER];
         //on recoit le bloc qu'on stock dans le buffer
-        Rio_readn(clientfd, buffer, taille_effective);
+        rio_readn(clientfd, buffer, taille_effective);
         //on écrit le bloc dans le fichier
-        Rio_writen(new_file, buffer, taille_effective);
+        rio_writen(new_file, buffer, taille_effective);
         nb_packet--;
     }
 
@@ -120,7 +120,7 @@ void fin_communication(int clientfd) {
     rc.taille = 0;
 
     // On envoie la requete
-    Rio_writen(clientfd, &rc, sizeof(Requete_client));
+    rio_writen(clientfd, &rc, sizeof(Requete_client));
 }
 
 void client(int clientfd) {
