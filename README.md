@@ -21,7 +21,7 @@ Compiler le projet make
 Le port par défaut est 2121
 
 ```bash
-./client [Adresse IP] [Port]
+./client [Adresse IP]
 ```
 
 
