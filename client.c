@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
     int clientfd;
     char *host;
 
-    if (argc != 3) {
+    if (argc != 2) {
         fprintf(stderr, "usage: %s <host>\n", argv[0]);
         exit(0);
     }
