@@ -19,7 +19,7 @@ float calculer_rapidite(double taille, double temps) {
 void GET_fichier(Cmdline *l, int clientfd) {
     
     struct timeval temps_debut, temps_fin;
-    // temps de début
+    // temps de début de requete
     gettimeofday(&temps_debut, NULL);
 
     char* nom_fichier = l->seq[0][1];
@@ -68,11 +68,14 @@ void GET_fichier(Cmdline *l, int clientfd) {
         new_file = Open(nom_fichier, O_CREAT | O_WRONLY, 0644);
     }
 
+    // On récupère la taille du fichier
     struct stat infos_fichier;
     Fstat(new_file, &infos_fichier);
     long taille_fichier = infos_fichier.st_size;
+    // On envoie la taille pour commencer le transfert de fichier où on s'etait arreté
     rio_writen(clientfd, &taille_fichier, sizeof(long));
 
+    // calcul du nombre de bits restant à transferer
     long taille_restant = reponse.taille_fichier - taille_fichier;
 
     // calcul du nombre de packet que l'on va recevoir

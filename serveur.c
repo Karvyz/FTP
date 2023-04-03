@@ -14,6 +14,7 @@
 int pids[NB_PROC];
 int is_fils = 0;
 
+/*fonction appeler dans le main pour créer les fils*/
 void creerfils()
 {
     for (int i = 0; i < NB_PROC; i++)
@@ -24,7 +25,7 @@ void creerfils()
         }
     }
 }
-
+/*handler pour tuer les fils*/
 void SIGINT_handler(int sig)
 {
     for (int i = 0; i < NB_PROC; i++)

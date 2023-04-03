@@ -23,6 +23,7 @@ int test_fichier(char* nom_fichier){
 
 int erreur_connexion=0;
 
+/*handler lorsqu'on recoit sigpipe*/
 void SIGPIPE_handler(int sig) {
     erreur_connexion = 1;
 }
@@ -32,7 +33,6 @@ reçoit la requette GET,
 envoie le fichier voulu en envoyant d'abord sa taille puis le fichier
 renvoi une erreur si fichier inexistant ou innaccessible*/
 void get_f(int connfd, Requete_client requete){
-
 
     /*creation du buffer de taille qu'on a reçu dans requete */
     char* nom_fichier = malloc(requete.taille + 1);
@@ -46,7 +46,6 @@ void get_f(int connfd, Requete_client requete){
     /*on va chercher les fichiers dans le dossier files*/
     char path[] = "files/";
     strcat(path, nom_fichier);
-
 
     Get_reponse reponse;
 
@@ -71,17 +70,15 @@ void get_f(int connfd, Requete_client requete){
             {return;}
         char buffer[TAILLE_BUFFER];
 
-        // // on envoie la taille du buffer
-        // int taille_buffer= TAILLE_BUFFER;
-        // Rio_writen(connfd, &taille_buffer, sizeof(int));
-
-        long octet_depart;
-        ssize_t c;
-        if ((c = rio_readn(connfd, &octet_depart, sizeof(long)))==0)
+        // on recoit le nombre de bits deja envoyé
+        // (si il y a eu un potenetiel début d'envoi)
+        long bits_depart;
+        if ((rio_readn(connfd, &bits_depart, sizeof(long)))==0)
             {return;}
-        if (octet_depart > 0) {
-            lseek(fichier, octet_depart, SEEK_SET);
-            taille_fichier = taille_fichier - octet_depart;
+        // si le nombre bits_depart et pas null, on met à jour le nombre de bits restants
+        if (bits_depart > 0) {
+            lseek(fichier, bits_depart, SEEK_SET);
+            taille_fichier = taille_fichier - bits_depart;
         }
         // on calcule le nombre de packet qu'on va envoyer
         long nb_packet = (taille_fichier/TAILLE_BUFFER) + ((taille_fichier%TAILLE_BUFFER) > 0 ? 1 : 0);
